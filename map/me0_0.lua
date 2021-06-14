@@ -55,7 +55,7 @@
 },
       interaction = {
         {x=5, y=5, name="", conv={"Hop"}, monture={b=true, src="root"}},
-        {x=10, y=10, name="", conv={"Déguisement de guerrier"}, monture={b=true, src="sprites/leo.png", speed=6, taille=1}},
+        {x=10, y=10, name="", conv={"Vous enfilez un déguisement..."}, monture={b=true, src="sprites/leo.png", speed=7, taille=1}},
         {x=29, y=20, name="", conv={"La porte est verouillee"}, monture={b=false}}
       }, 
       zone = {

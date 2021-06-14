@@ -5,10 +5,7 @@ require('func/ini')
 
 local debug = false
 
-local setTimeout = function(duree)
-    local timeNow = love.timer.getTime( )
-    -- a ecrire plus tard
-end
+local defaultSpeed = 7
 local debloc= {d=false, g=false, h=false, b=false}
 local Tserial = require('func/TSerial')
 local anim8 = require('anim8-master/anim8')
@@ -48,6 +45,9 @@ local imagePersoActuelle
 local posMap = {x=0, y=0}
 local jump = {can = false, bol = true, jump = 0, goal = 0, frame = 0, pushed = false}
 local plat = {value = 0, pushed = 0}
+
+local runTimer = {start=0, finish=0}
+
 function math.ceil(n)
   return math.floor(n + 0.5)
 end
@@ -70,7 +70,7 @@ end
 
 function Reset()
   love.filesystem.remove('game.sav')
-  perso = {localisation='e', name="Faith", fname="Rudo", rx=420, ry=420, speed=6}
+  perso = {localisation='e', name="Faith", fname="Rudo", rx=420, ry=420, speed=defaultSpeed}
   timer.b = false
   posMap.x = 0
   posMap.y = 0
@@ -80,11 +80,21 @@ function Reset()
   initAnims()
   local objectToSave = {perso = perso, posMap = posMap}
   love.filesystem.write('game.sav', Tserial.pack(objectToSave) )
-  -- imagePerso = { sprite = love.graphics.newImage("sprites/rudo.png"), frame = QS96.AV[1]}
   animationActuelle = animation
   imagePersoActuelle = imagePerso
   montureBoolean = false
   menu = false
+  runTimer.start = love.timer.getTime()
+end
+
+function EndRun()
+  if runTimer.start == 0 then
+    return
+  end
+  runTimer.finish = love.timer.getTime()
+  local totalTime = runTimer.finish - runTimer.start
+  print(totalTime)
+  runTimer.start = 0
 end
 
 local changeMap = {
@@ -249,7 +259,7 @@ function love.load()
   QS96 = IniQS96()
   imagePerso = { sprite = love.graphics.newImage("sprites/rudo.png"), frame = QS96.AV[1]}
   imagePersoActuelle = imagePerso
-  perso = {localisation='e', name="Faith", fname="Rudo", rx=420, ry=420, speed=6}
+  perso = {localisation='e', name="Faith", fname="Rudo", rx=420, ry=420, speed=defaultSpeed}
   
   if love.filesystem.getInfo('game.sav') == nil then
     perso.ry = 500
@@ -338,7 +348,7 @@ function love.update(dt)
             montureBoolean = false
             imagePersoActuelle = imagePerso
             animationActuelle = animation
-            perso.speed = 6
+            perso.speed = defaultSpeed
           end
         end
       else
@@ -640,17 +650,17 @@ function love.draw()
     love.graphics.setColor(0,0,0)
     love.graphics.rectangle("fill", bordureX+(1344/2)-150+20, bordureY+(768/2)-150+20, 300-40, 30)
     love.graphics.setColor(180,180,180)
-    love.graphics.print("Sauvegarder ...", bordureX+(1344/2)-150+20+5, bordureY+(768/2)-150+20)
+    love.graphics.print("Sauvegarder", bordureX+(1344/2)-150+20+5, bordureY+(768/2)-150+20)
     
     love.graphics.setColor(0,0,0)
     love.graphics.rectangle("fill", bordureX+(1344/2)-150+20, bordureY+(768/2)-150+60, 300-40, 30)
     love.graphics.setColor(180,180,180)
-    love.graphics.print("Reset", bordureX+(1344/2)-150+20+5, bordureY+(768/2)-150+60)
+    love.graphics.print("Commencer une run", bordureX+(1344/2)-150+20+5, bordureY+(768/2)-150+60)
     
     love.graphics.setColor(0,0,0)
     love.graphics.rectangle("fill", bordureX+(1344/2)-150+20, bordureY+(768/2)-150+100, 300-40, 30)
     love.graphics.setColor(180,180,180)
-    love.graphics.print("Quit (esc) ...", bordureX+(1344/2)-150+20+5, bordureY+(768/2)-150+100)
+    love.graphics.print("Quit (esc)", bordureX+(1344/2)-150+20+5, bordureY+(768/2)-150+100)
     
     love.graphics.setColor(0,0,0)
     love.graphics.print("Le menu est ouvert : ", bordureX+20, bordureY+700)
@@ -737,7 +747,7 @@ function love.keypressed(key)
                 montureBoolean = false
                 imagePersoActuelle = imagePerso
                 animationActuelle = animation
-                perso.speed = 6
+                perso.speed = defaultSpeed
               end
             end
           end
@@ -757,6 +767,9 @@ function love.keypressed(key)
             conv.conv = mapTable.persos[numX2]
             conv.b = true
             conv.n = 1
+            if conv.conv.name == "DEV" then
+              EndRun()
+            end 
           end
         end
         if conv.b then
