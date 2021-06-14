@@ -67,6 +67,26 @@ local initAnims = function ()
     table.insert(mapAnimations, obj)
   end
 end
+
+function Reset()
+  love.filesystem.remove('game.sav')
+  perso = {localisation='e', name="Faith", fname="Rudo", rx=420, ry=420, speed=6}
+  timer.b = false
+  posMap.x = 0
+  posMap.y = 0
+  mapTable = require('map/m'..perso.localisation..posMap.x..'_'..posMap.y) -- on charge la bonne map
+  tileset = tilesets[mapTable.tileset]
+  timer.t = love.timer.getTime( )
+  initAnims()
+  local objectToSave = {perso = perso, posMap = posMap}
+  love.filesystem.write('game.sav', Tserial.pack(objectToSave) )
+  -- imagePerso = { sprite = love.graphics.newImage("sprites/rudo.png"), frame = QS96.AV[1]}
+  animationActuelle = animation
+  imagePersoActuelle = imagePerso
+  montureBoolean = false
+  menu = false
+end
+
 local changeMap = {
   
   gauche = function ()
@@ -229,12 +249,7 @@ function love.load()
   QS96 = IniQS96()
   imagePerso = { sprite = love.graphics.newImage("sprites/rudo.png"), frame = QS96.AV[1]}
   imagePersoActuelle = imagePerso
-  perso = {localisation='e', name="Faith", fname="Rudo", rx=420, ry=420, speed=4}
-  if winWidth > 1500 then
-    perso.speed = 7
-  elseif winWidth > 2000 then
-    perso.speed = 7
-  end
+  perso = {localisation='e', name="Faith", fname="Rudo", rx=420, ry=420, speed=6}
   
   if love.filesystem.getInfo('game.sav') == nil then
     perso.ry = 500
@@ -323,12 +338,7 @@ function love.update(dt)
             montureBoolean = false
             imagePersoActuelle = imagePerso
             animationActuelle = animation
-            perso.speed = 4
-      	    if winWidth > 1500 then
-  			       perso.speed = 7
-		        elseif winWidth > 2000 then
-  			       perso.speed = 7
-		        end
+            perso.speed = 6
           end
         end
       else
@@ -635,7 +645,7 @@ function love.draw()
     love.graphics.setColor(0,0,0)
     love.graphics.rectangle("fill", bordureX+(1344/2)-150+20, bordureY+(768/2)-150+60, 300-40, 30)
     love.graphics.setColor(180,180,180)
-    love.graphics.print("Chat perché ...", bordureX+(1344/2)-150+20+5, bordureY+(768/2)-150+60)
+    love.graphics.print("Reset", bordureX+(1344/2)-150+20+5, bordureY+(768/2)-150+60)
     
     love.graphics.setColor(0,0,0)
     love.graphics.rectangle("fill", bordureX+(1344/2)-150+20, bordureY+(768/2)-150+100, 300-40, 30)
@@ -727,12 +737,7 @@ function love.keypressed(key)
                 montureBoolean = false
                 imagePersoActuelle = imagePerso
                 animationActuelle = animation
-                perso.speed = 4
-		if winWidth > 1500 then
-    			perso.speed = 7
-  		elseif winWidth > 2000 then
-    			perso.speed = 7
-  		end
+                perso.speed = 6
               end
             end
           end
@@ -875,7 +880,7 @@ function love.mousepressed(x, y, button)
       if y>bordureY+(768/2)-150+20 and y<bordureY+(768/2)-150+20+30 then
         Save()
       elseif y>bordureY+(768/2)-150+60 and y<bordureY+(768/2)-150+60+30 then
-        --print("poeme")
+        Reset()
       elseif y>bordureY+(768/2)-150+100 and y<bordureY+(768/2)-150+100+30 then
         love.event.quit() -- Pour quitter le jeu
       end
