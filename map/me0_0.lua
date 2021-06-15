@@ -73,7 +73,7 @@
       },
       
       tp = {
-        {x=21, y=15, change = {b=true, x=21, y=13, src="map/interieur/mi0_0_1"}}
+        {x=21, y=15, change = {b=true, x=21, y=13, src="map/interieur/mi0_0_1", mx=0, my=0}}
       },
       animations = {
         {x=19, y=18, src=love.graphics.newImage("sprites/ani/fontaine1.png"), w=96, h=96, time=0.15},

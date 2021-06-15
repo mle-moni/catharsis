@@ -24,8 +24,9 @@ local conv = {b=false, n=0}
 local conv2 = {b=false, n=0}
 local actDir = "bas"
 local pixelMedium = love.graphics.newFont('fonts/jouli.ttf', 30)
+local pixelSmall = love.graphics.newFont('fonts/jouli.ttf', 20)
 local normalMedium = love.graphics.newFont(20)
-local font = {pixel={medium=pixelMedium}, normal={medium=normalMedium}}
+local font = {pixel={medium=pixelMedium, small=pixelSmall}, normal={medium=normalMedium}}
 local menu = false
 local QS192
 local QS96
@@ -46,8 +47,29 @@ local posMap = {x=0, y=0}
 local jump = {can = false, bol = true, jump = 0, goal = 0, frame = 0, pushed = false}
 local plat = {value = 0, pushed = 0}
 
-local runTimer = {start=0, finish=0}
+local runTimer = {start=0, finish=0, finished=false, totalTime=0}
 
+function PrintTime(timeSpentInRun)
+  love.graphics.setFont(font.pixel.medium)
+  love.graphics.setColor(180,180,180)
+  local ms = math.ceil(timeSpentInRun * 1000) % 1000
+  local seconds = math.floor(timeSpentInRun)
+  local minutes = math.floor(seconds / 60)
+  local hours = math.floor(minutes / 60)
+  local timeStr = GetNumStr(hours, 2)..":"..GetNumStr(minutes % 60, 2)..":"..GetNumStr(seconds % 60, 2)
+  local posLeft = winWidth / 2 - 150
+  love.graphics.print("Chrono: "..timeStr, posLeft, 80)
+  love.graphics.setFont(font.pixel.small)
+  love.graphics.print(GetNumStr(ms, 3), posLeft + 210, 80)
+end
+
+function GetNumStr(num, padding)
+  local numStr = tostring(num)
+  if string.len(numStr) < padding then
+    return GetNumStr("0"..numStr, padding)
+  end
+  return numStr
+end
 function math.ceil(n)
   return math.floor(n + 0.5)
 end
@@ -85,6 +107,8 @@ function Reset()
   montureBoolean = false
   menu = false
   runTimer.start = love.timer.getTime()
+  runTimer.finished = false
+  runTimer.totalTime = 0
 end
 
 function EndRun()
@@ -93,7 +117,8 @@ function EndRun()
   end
   runTimer.finish = love.timer.getTime()
   local totalTime = runTimer.finish - runTimer.start
-  print(totalTime)
+  runTimer.finished = true
+  runTimer.totalTime = totalTime
   runTimer.start = 0
 end
 
@@ -297,6 +322,8 @@ function love.update(dt)
         perso.rx = mapTable.tp[i].change.x * 32 + 32
         perso.ry = mapTable.tp[i].change.y * 32
         if mapTable.tp[i].change.b == true then
+          posMap.x = mapTable.tp[i].change.mx
+          posMap.y = mapTable.tp[i].change.my
           mapTable = require(mapTable.tp[i].change.src)
           initAnims()
         end
@@ -668,6 +695,15 @@ function love.draw()
   end
   love.graphics.draw(MenuImage, 0+bordureX, 0+bordureY)
   
+  if runTimer.start ~= 0 then
+    local timeSpentInRun = love.timer.getTime() - runTimer.start
+    PrintTime(timeSpentInRun)
+  end
+
+  if runTimer.finished then
+    PrintTime(runTimer.totalTime)
+  end
+
   if conv.b == true then
     love.graphics.setFont(font.pixel.medium)
     love.graphics.setColor(102,93,11, 220)
@@ -719,6 +755,11 @@ function love.keypressed(key)
       menu = false
     end
   end
+
+  if key == "r" then
+    Reset()
+  end
+
   if key == "c" then
     if conv.b == false then
       local actions = function(ligne, colonne) 
